@@ -285,7 +285,7 @@ show_log() {
 }
 
 install_bbr() {
-    bash <(curl -L -s https://raw.githubusercontent.com/gosoull/sh/master/tcp.sh)
+    bash <(curl -L -s https://raw.githubusercontent.com/zhubb.net/sh/master/tcp.sh)
     if [[ $? == 0 ]]; then
         echo ""
         echo -e "${green}安装 bbr 成功${plain}"
