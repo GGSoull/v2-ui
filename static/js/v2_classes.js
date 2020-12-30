@@ -1,6 +1,5 @@
 const Protocols = {
     VMESS: 'vmess',
-    VLESS: 'vless',
     SHADOWSOCKS: 'shadowsocks',
     DOKODEMO: 'dokodemo-door',
     MTPROTO: 'mtproto',
@@ -244,7 +243,6 @@ class KcpStreamSettings extends V2CommonClass {
                 readBufferSize=2,
                 writeBufferSize=2,
                 type='none',
-                seed=randomSeq(10),
                 ) {
         super();
         this.mtu = mtu;
@@ -255,7 +253,6 @@ class KcpStreamSettings extends V2CommonClass {
         this.readBuffer = readBufferSize;
         this.writeBuffer = writeBufferSize;
         this.type = type;
-        this.seed = seed;
     }
 
     static fromJson(json={}) {
@@ -268,7 +265,6 @@ class KcpStreamSettings extends V2CommonClass {
             json.readBufferSize,
             json.writeBufferSize,
             isEmpty(json.header) ? 'none' : json.header.type,
-            json.seed,
         );
     }
 
@@ -284,7 +280,6 @@ class KcpStreamSettings extends V2CommonClass {
             header: {
                 type: this.type,
             },
-            seed: this.seed,
         };
     }
 }
@@ -657,7 +652,7 @@ class Inbound extends V2CommonClass {
 
     toJson() {
         let streamSettings;
-        if (this.protocol === Protocols.VMESS || this.protocol === Protocols.VLESS) {
+        if (this.protocol === Protocols.VMESS) {
             streamSettings = this.stream.toJson();
         }
         return {
@@ -683,7 +678,6 @@ Inbound.Settings = class extends V2CommonClass {
     static getSettings(protocol) {
         switch (protocol) {
             case Protocols.VMESS: return new Inbound.VmessSettings(protocol);
-            case Protocols.VLESS: return new Inbound.VLESSSettings(protocol);
             case Protocols.SHADOWSOCKS: return new Inbound.ShadowsocksSettings(protocol);
             case Protocols.DOKODEMO: return new Inbound.DokodemoSettings(protocol);
             case Protocols.MTPROTO: return new Inbound.MtprotoSettings(protocol);
@@ -696,7 +690,6 @@ Inbound.Settings = class extends V2CommonClass {
     static fromJson(protocol, json) {
         switch (protocol) {
             case Protocols.VMESS: return Inbound.VmessSettings.fromJson(json);
-            case Protocols.VLESS: return Inbound.VLESSSettings.fromJson(json);
             case Protocols.SHADOWSOCKS: return Inbound.ShadowsocksSettings.fromJson(json);
             case Protocols.DOKODEMO: return Inbound.DokodemoSettings.fromJson(json);
             case Protocols.MTPROTO: return Inbound.MtprotoSettings.fromJson(json);
@@ -765,79 +758,6 @@ Inbound.VmessSettings.Vmess = class extends V2CommonClass {
             json.id,
             json.alterId,
         );
-    }
-};
-
-Inbound.VLESSSettings = class extends Inbound.Settings {
-    constructor(protocol,
-                vlesses=[new Inbound.VLESSSettings.VLESS()],
-                decryption='none',
-                fallbacks=[],) {
-        super(protocol);
-        this.vlesses = vlesses;
-        this.decryption = decryption;
-        this.fallbacks = fallbacks;
-    }
-
-    static fromJson(json={}) {
-        return new Inbound.VLESSSettings(
-            Protocols.VLESS,
-            json.clients.map(client => Inbound.VLESSSettings.VLESS.fromJson(client)),
-            json.decryption,
-            Inbound.VLESSSettings.Fallback.fromJson(json.fallbacks),
-        );
-    }
-
-    toJson() {
-        return {
-            clients: Inbound.VLESSSettings.toJsonArray(this.vlesses),
-            decryption: this.decryption,
-            fallbacks: Inbound.VLESSSettings.toJsonArray(this.fallbacks),
-        };
-    }
-};
-Inbound.VLESSSettings.VLESS = class extends V2CommonClass {
-
-    constructor(id=randomUUID()) {
-        super();
-        this.id = id;
-    }
-
-    static fromJson(json={}) {
-        return new Inbound.VmessSettings.Vmess(
-            json.id,
-        );
-    }
-};
-Inbound.VLESSSettings.Fallback = class extends V2CommonClass {
-    constructor(alpn='', path='', dest='', xver=0) {
-        super();
-        this.alpn = alpn;
-        this.path = path;
-        this.dest = dest;
-        this.xver = xver;
-    }
-
-    toJson() {
-        return {
-            alpn: this.alpn,
-            path: this.path,
-            dest: this.dest,
-            xver: this.xver,
-        }
-    }
-
-    static fromJson(json=[]) {
-        const fallbacks = [];
-        for (let fallback of json) {
-            fallbacks.push(new Inbound.VLESSSettings.Fallback(
-                fallback.alpn,
-                fallback.path,
-                fallback.dest,
-                fallback.xver,
-            ))
-        }
-        return fallbacks;
     }
 };
 

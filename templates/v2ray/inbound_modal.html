@@ -47,14 +47,6 @@
         </a-form-item>
     </a-form>
 
-    <!-- vmess settings -->
-    <a-form v-if="inModal.inbound.protocol === Protocols.VLESS"
-            layout="inline">
-        <a-form-item label="id">
-            <a-input v-model.trim="inModal.inbound.settings.vlesses[0].id"></a-input>
-        </a-form-item>
-    </a-form>
-
     <!-- shadowsocks -->
     <a-form v-if="inModal.inbound.protocol === Protocols.SHADOWSOCKS"
             layout="inline">
@@ -76,14 +68,12 @@
     </a-form>
 
     <!-- stream settings -->
-    <template v-if="inModal.inbound.protocol === Protocols.VMESS
-                    || inModal.inbound.protocol === Protocols.VLESS
-                    || inModal.inbound.protocol === Protocols.SHADOWSOCKS">
+    <template v-if="inModal.inbound.protocol === Protocols.VMESS">
 
         <!-- select stream network -->
         <a-form layout="inline">
             <a-form-item label="{{ _('transport') }}">
-                <a-select v-model="inModal.inbound.stream.network" @change="streamNetworkChange">
+                <a-select v-model="inModal.inbound.stream.network">
                     <a-select-option value="tcp">tcp</a-select-option>
                     <a-select-option value="kcp">kcp</a-select-option>
                     <a-select-option value="ws">ws</a-select-option>
@@ -190,9 +180,6 @@
                     <a-select-option value="dtls">dtls（{{ _('camouflage DTLS 1.2 packages') }}）</a-select-option>
                     <a-select-option value="wireguard">wireguard（{{ _('camouflage wireguard packages') }}）</a-select-option>
                 </a-select>
-            </a-form-item>
-            <a-form-item label="{{ _('password') }}">
-                <a-input v-model.number="inModal.inbound.stream.kcp.seed"></a-input>
             </a-form-item>
             <a-form-item label="{{ _('mtu') }}">
                 <a-input type="number" v-model.number="inModal.inbound.stream.kcp.mtu"></a-input>
@@ -339,9 +326,7 @@
     </a-form>
 
     <!-- tls settings -->
-    <template v-if="(inModal.inbound.protocol === Protocols.VMESS
-                    || inModal.inbound.protocol === Protocols.VLESS
-                    || inModal.inbound.protocol === Protocols.SHADOWSOCKS)
+    <template v-if="inModal.inbound.protocol === Protocols.VMESS
                     && ['tcp', 'ws', 'http', 'quic'].indexOf(inModal.inbound.stream.network) >= 0">
 
         <!-- tls enable -->
@@ -444,7 +429,6 @@
 
     let protocols = {
         VMESS: Protocols.VMESS,
-        VLESS: Protocols.VLESS,
         SHADOWSOCKS: Protocols.SHADOWSOCKS,
         DOKODEMO: Protocols.DOKODEMO,
         SOCKS: Protocols.SOCKS,
@@ -458,13 +442,6 @@
             inModal: inModal,
             Protocols: protocols,
             SSMethods: SSMethods,
-        },
-        methods: {
-            streamNetworkChange(oldValue) {
-                if (oldValue === 'kcp') {
-                    this.inModal.inbound.stream.security = 'none';
-                }
-            }
         }
     });
 

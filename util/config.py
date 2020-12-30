@@ -45,7 +45,7 @@ def update_setting_by_key(key, value):
 
 
 def all_settings():
-    return Setting.query.filter(Setting.name != '', Setting.name != 'is_traffic_reset').all()
+    return Setting.query.filter(Setting.name != '').all()
 
 
 def get_port():
@@ -68,8 +68,8 @@ def get_login_title():
     return __get('login_title', 'Sign in')
 
 
-# def get_v2_config_path():
-#     return __get('v2_config_path', '/etc/v2ray/config.json')
+def get_v2_config_path():
+    return __get('v2_config_path', '/etc/v2ray/config.json')
 
 
 def get_v2_restart_cmd():
@@ -96,26 +96,12 @@ def get_traffic_job_interval():
     return __get('traffic_job_interval', 30)
 
 
-def get_reset_traffic_day():
-    return __get('reset_traffic_day', 0)
-
-
-def is_traffic_reset():
-    return __get('is_traffic_reset', 0) != 0
-
-
 def get_base_path():
     return __get('base_path', '')
 
 
-# def get_v2ctl_cmd_path():
-#     return __get('v2ctl_cmd_path', '/usr/bin/v2ray/v2ctl')
-
-
-def get_dir(*paths):
-    if not paths:
-        return BASE_DIR
-    return os.path.join(BASE_DIR, *paths)
+def get_v2ctl_cmd_path():
+    return __get('v2ctl_cmd_path', '/usr/bin/v2ray/v2ctl')
 
 
 def get_secret_key():
@@ -123,7 +109,7 @@ def get_secret_key():
 
 
 def get_current_version():
-    return '5.4.3'
+    return '5.2.1'
 
 
 def add_if_not_exist(setting, update=False):
@@ -154,9 +140,7 @@ def init_db(update=False):
     add_if_not_exist(Setting('v2_config_check_interval', 'v2_config_check_interval', '10', 'int', '', True), update)
     add_if_not_exist(Setting('v2_restart_cmd', 'v2_restart_cmd', 'systemctl restart v2ray', 'text', '', False), update)
     add_if_not_exist(Setting('traffic_job_interval', 'traffic_job_interval', '30', 'int', '', True), update)
-    add_if_not_exist(Setting('reset_traffic_day', 'reset_traffic_day', '0', 'int', '', True), update)
-    add_if_not_exist(Setting('is_traffic_reset', 'is_traffic_reset', '0', 'int', '', False), update)
-    add_if_not_exist(Setting('v2ctl_cmd_path', 'v2ctl_cmd_path', '/usr/local/bin/v2ctl', 'text', '', True), update)
+    add_if_not_exist(Setting('v2ctl_cmd_path', 'v2ctl_cmd_path', '/usr/bin/v2ray/v2ctl', 'text', '', True), update)
     add_if_not_exist(Setting('secret_key', '', os.urandom(24), 'text', '', True), False)
     db.session.commit()
 

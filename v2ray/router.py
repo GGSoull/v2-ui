@@ -5,9 +5,8 @@ from flask_babel import gettext
 from sqlalchemy import and_
 
 from base.models import Msg
-from base.models import User
 from init import db
-from util import config, server_info, v2_util
+from util import config, server_info
 from util.v2_jobs import v2_config_change
 from v2ray.models import Inbound
 
@@ -28,10 +27,7 @@ def accounts():
     from init import common_context
     inbs = Inbound.query.all()
     inbs = '[' + ','.join([json.dumps(inb.to_json(), ensure_ascii=False) for inb in inbs]) + ']'
-    user = User.query.first()
-    has_changed = user.username != 'admin' or user.password != 'admin'
-    return render_template('v2ray/accounts.html', **common_context,
-                           inbounds=inbs, has_changed=has_changed)
+    return render_template('v2ray/accounts.html', **common_context, inbounds=inbs)
 
 
 @v2ray_bp.route('/clients/', methods=['GET'])
@@ -45,8 +41,7 @@ def setting():
     from init import common_context
     settings = config.all_settings()
     settings = '[' + ','.join([json.dumps(s.to_json(), ensure_ascii=False) for s in settings]) + ']'
-    return render_template('v2ray/setting.html', **common_context, settings=settings,
-                           v2ray_version=v2_util.get_v2ray_version())
+    return render_template('v2ray/setting.html', **common_context, settings=settings)
 
 
 @v2ray_bp.route('/tutorial/', methods=['GET'])
