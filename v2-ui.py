@@ -75,14 +75,14 @@ if __name__ == '__main__':
             if len(sys.argv) > 2:
                 port = sys.argv[2]
             else:
-                port = 65432
+                port = 6666
             config.update_setting_by_key('port', port)
             print('Set port to ' + port + ' successfully')
         else:
             print('Invalid command')
             print('resetconfig: Reset all panel settings to default values')
             print('resetuser: Reset username and password to \'admin\'')
-            print('setport [number]: Set web port to [number], default is 65432')
+            print('setport [number]: Set web port to [number], default is 6666')
     else:
         init_windows()
         logging_init()
