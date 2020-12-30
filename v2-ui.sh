@@ -312,7 +312,7 @@ update_shell() {
 }
 
 update_v2ray() {
-    bash <(curl -L -s https://install.direct/go.sh)
+    bash <(curl -L -s https://raw.githubusercontent.com/v2fly/fhs-install-v2ray/master/install-release.sh)
     if [[ $? != 0 ]]; then
         echo ""
         echo -e "${red}更新 v2ray 失败，请自行检查错误信息${plain}"
