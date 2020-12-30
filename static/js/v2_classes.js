@@ -1,12 +1,13 @@
 const Protocols = {
     VMESS: 'vmess',
     VLESS: 'vless',
-    TROJAN: 'trojan',
     SHADOWSOCKS: 'shadowsocks',
     DOKODEMO: 'dokodemo-door',
     MTPROTO: 'mtproto',
     SOCKS: 'socks',
     HTTP: 'http',
+    FREEDOM: 'freedom',
+    BLACKHOLE: 'blackhole',
 };
 
 const VmessMethods = {
@@ -381,9 +382,11 @@ class QuicStreamSettings extends V2CommonClass {
 
 class TlsStreamSettings extends V2CommonClass {
     constructor(serverName='',
+                allowInsecure=true,
                 certificates=[new TlsStreamSettings.Cert()]) {
         super();
         this.server = serverName;
+        this.allowInsecure = allowInsecure;
         this.certs = certificates;
     }
 
@@ -402,6 +405,7 @@ class TlsStreamSettings extends V2CommonClass {
         }
         return new TlsStreamSettings(
             json.serverName,
+            json.allowInsecure,
             certs,
         );
     }
@@ -409,6 +413,7 @@ class TlsStreamSettings extends V2CommonClass {
     toJson() {
         return {
             serverName: this.server,
+            allowInsecure: this.allowInsecure,
             certificates: TlsStreamSettings.toJsonArray(this.certs),
         };
     }
@@ -628,16 +633,10 @@ class Inbound extends V2CommonClass {
             + '#' + encodeURIComponent(this.remark);
     }
 
-    genTrojanLink(address='') {
-        let settings = this.settings;
-        return `trojan://${settings.clients[0].password}@${address}:${this.port}#${encodeURIComponent(this.remark)}`;
-    }
-
     genLink(address='') {
         switch (this.protocol) {
             case Protocols.VMESS: return this.genVmessLink(address);
             case Protocols.SHADOWSOCKS: return this.genSSLink(address);
-            case Protocols.TROJAN: return this.genTrojanLink(address);
             default: return '';
         }
     }
@@ -658,10 +657,7 @@ class Inbound extends V2CommonClass {
 
     toJson() {
         let streamSettings;
-        if (this.protocol === Protocols.VMESS
-            || this.protocol === Protocols.VLESS
-            || this.protocol === Protocols.TROJAN
-            || this.protocol === Protocols.SHADOWSOCKS) {
+        if (this.protocol === Protocols.VMESS || this.protocol === Protocols.VLESS) {
             streamSettings = this.stream.toJson();
         }
         return {
@@ -688,7 +684,6 @@ Inbound.Settings = class extends V2CommonClass {
         switch (protocol) {
             case Protocols.VMESS: return new Inbound.VmessSettings(protocol);
             case Protocols.VLESS: return new Inbound.VLESSSettings(protocol);
-            case Protocols.TROJAN: return new Inbound.TrojanSettings(protocol);
             case Protocols.SHADOWSOCKS: return new Inbound.ShadowsocksSettings(protocol);
             case Protocols.DOKODEMO: return new Inbound.DokodemoSettings(protocol);
             case Protocols.MTPROTO: return new Inbound.MtprotoSettings(protocol);
@@ -702,7 +697,6 @@ Inbound.Settings = class extends V2CommonClass {
         switch (protocol) {
             case Protocols.VMESS: return Inbound.VmessSettings.fromJson(json);
             case Protocols.VLESS: return Inbound.VLESSSettings.fromJson(json);
-            case Protocols.TROJAN: return Inbound.TrojanSettings.fromJson(json);
             case Protocols.SHADOWSOCKS: return Inbound.ShadowsocksSettings.fromJson(json);
             case Protocols.DOKODEMO: return Inbound.DokodemoSettings.fromJson(json);
             case Protocols.MTPROTO: return Inbound.MtprotoSettings.fromJson(json);
@@ -845,44 +839,6 @@ Inbound.VLESSSettings.Fallback = class extends V2CommonClass {
         }
         return fallbacks;
     }
-};
-
-Inbound.TrojanSettings = class extends Inbound.Settings {
-    constructor(protocol, clients=[new Inbound.TrojanSettings.Client()]) {
-        super(protocol);
-        this.clients = clients;
-    }
-
-    toJson() {
-        return {
-            clients: Inbound.TrojanSettings.toJsonArray(this.clients),
-        };
-    }
-
-    static fromJson(json={}) {
-        const clients = [];
-        for (const c of json.clients) {
-            clients.push(Inbound.TrojanSettings.Client.fromJson(c));
-        }
-        return new Inbound.TrojanSettings(Protocols.TROJAN, clients);
-    }
-};
-Inbound.TrojanSettings.Client = class extends V2CommonClass {
-    constructor(password=randomSeq(10)) {
-        super();
-        this.password = password;
-    }
-
-    toJson() {
-        return {
-            password: this.password,
-        };
-    }
-
-    static fromJson(json={}) {
-        return new Inbound.TrojanSettings.Client(json.password);
-    }
-
 };
 
 Inbound.ShadowsocksSettings = class extends Inbound.Settings {
